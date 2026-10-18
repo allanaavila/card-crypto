@@ -7,6 +7,10 @@ import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.Base64;
 
+import javax.crypto.spec.OAEPParameterSpec;
+import javax.crypto.spec.PSource;
+import java.security.spec.MGF1ParameterSpec;
+
 @Service
 public class RsaCryptoService {
 
@@ -21,45 +25,47 @@ public class RsaCryptoService {
         if (text == null || text.isBlank()) {
             throw new IllegalArgumentException("O texto não pode ser vazio");
         }
-
-        // Configurar o algoritmo de criptografia RSA
         Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
 
-        // Inicializar com chave publica
         cipher.init(
-                Cipher.ENCRYPT_MODE, rsaKeyService.getPublicKey()
+                Cipher.ENCRYPT_MODE,
+                rsaKeyService.getPublicKey(),
+                OAEP_SHA256_SPEC
         );
 
-        // Converter texto em bytes
         byte[] textBytes = text.getBytes(StandardCharsets.UTF_8);
-
-        // Criptografar os bytes
         byte[] encryptedBytes = cipher.doFinal(textBytes);
 
-        // Converter o resultado para Base64
         return Base64.getEncoder().encodeToString(encryptedBytes);
     }
 
     public String decrypt(String encryptText) throws GeneralSecurityException {
 
-        // Validar o texto recebido
         if(encryptText == null || encryptText.isBlank()) {
             throw new IllegalArgumentException("O texto não pode ser vazio");
         }
 
-        // Converter base64 para bytes
         byte[] encryptedBytes = Base64.getDecoder().decode(encryptText);
 
-        // Configurar o algoritmo de criptografia RSA
         Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
 
-        // Inicializar com chave privada
-        cipher.init(Cipher.DECRYPT_MODE, rsaKeyService.getPrivateKey());
+        cipher.init(
+                Cipher.DECRYPT_MODE,
+                rsaKeyService.getPrivateKey(),
+                OAEP_SHA256_SPEC
+        );
 
-        // Descriptografar os bytes
         byte[] decryptedBytes = cipher.doFinal(encryptedBytes);
 
-        // Converter bytes para String
         return new String(decryptedBytes, StandardCharsets.UTF_8);
     }
+
+
+    private static final OAEPParameterSpec OAEP_SHA256_SPEC =
+            new OAEPParameterSpec(
+                    "SHA-256",
+                    "MGF1",
+                    MGF1ParameterSpec.SHA256,
+                    PSource.PSpecified.DEFAULT
+            );
 }

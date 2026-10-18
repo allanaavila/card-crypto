@@ -1,3 +1,8 @@
 spring:
   application:
     name: card-crypto-api
+  profiles:
+    active: dev
+
+server:
+  port: 8080

@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
 import java.security.spec.MGF1ParameterSpec;
 import java.util.Base64;
+import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -37,9 +38,9 @@ class RsaApiIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+
     @Test
-    void deveConsultarChavePublicaViaHttp()
-            throws Exception {
+    void deveConsultarChavePublicaViaHttp() throws Exception {
 
         String responseBody = mockMvc.perform(
                         get("/api/crypto/rsa/public-key")
@@ -51,11 +52,15 @@ class RsaApiIntegrationTest {
 
         var json = objectMapper.readTree(responseBody);
 
-        assertEquals("rsa-key-001", json.get("kid").asText());
-        assertEquals("RSA", json.get("algorithm").asText());
+        String keyId = json.get("kid").asText();
+        String algorithm = json.get("algorithm").asText();
+        String chavePublicaBase64 = json.get("publicKey").asText();
 
-        String chavePublicaBase64 =
-                json.get("publicKey").asText();
+        assertNotNull(keyId);
+        assertFalse(keyId.isBlank());
+        assertDoesNotThrow(() -> UUID.fromString(keyId));
+
+        assertEquals("RSA", algorithm);
 
         assertNotNull(chavePublicaBase64);
         assertFalse(chavePublicaBase64.isBlank());

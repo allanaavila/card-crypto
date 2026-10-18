@@ -1,5 +1,6 @@
 package com.estudo.cardcrypto.service;
 
+import lombok.Getter;
 import org.springframework.stereotype.Service;
 
 import java.security.KeyPair;
@@ -7,19 +8,26 @@ import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Base64;
+import java.util.UUID;
 
 @Service
 public class RsaKeyService {
     private final KeyPair keyPair;
-    private static final String KEY_ID = "rsa-key-001";
+
+    @Getter
+    private final String keyId;
 
     public RsaKeyService() throws Exception {
-        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+        KeyPairGenerator generator =
+                KeyPairGenerator.getInstance("RSA");
 
         generator.initialize(2048);
 
         this.keyPair = generator.generateKeyPair();
+
+        this.keyId = UUID.randomUUID().toString();
     }
+
 
     public String getPublicKeyBase64() {
         byte[] publicKeyBytes = getPublicKey().getEncoded();
@@ -34,9 +42,5 @@ public class RsaKeyService {
 
     public PrivateKey getPrivateKey() {
         return keyPair.getPrivate();
-    }
-
-    public String getKeyId() {
-        return KEY_ID;
     }
 }

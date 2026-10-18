@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Base64;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -50,12 +51,27 @@ class RsaKeyServiceTest {
         );
     }
 
-
     @Test
     void deveRetornarIdentificadorDaChave() {
 
         String keyId = rsaKeyService.getKeyId();
 
-        assertEquals("rsa-key-001", keyId);
+        assertNotNull(keyId);
+        assertFalse(keyId.isBlank());
+
+        assertDoesNotThrow(() -> UUID.fromString(keyId));
+    }
+
+    @Test
+    void deveGerarIdentificadoresDiferentesParaNovosParesDeChaves()
+            throws Exception {
+
+        RsaKeyService primeiraInstancia = new RsaKeyService();
+        RsaKeyService segundaInstancia = new RsaKeyService();
+
+        assertNotEquals(
+                primeiraInstancia.getKeyId(),
+                segundaInstancia.getKeyId()
+        );
     }
 }

@@ -6,9 +6,11 @@ import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.security.KeyStore;
-import java.security.GeneralSecurityException;
+import java.security.*;
 import java.io.IOException;
+
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -82,4 +84,72 @@ public class RsaKeyStoreService {
         return keyStore;
     }
 
+    public boolean containsKeyAlias()
+            throws GeneralSecurityException, IOException {
+
+        KeyStore keyStore = loadKeyStore();
+
+        return keyStore.containsAlias(properties.alias());
+    }
+
+
+    public void saveKeyPair(
+            KeyPair keyPair,
+            X509Certificate certificate
+    ) throws GeneralSecurityException, IOException {
+
+        KeyStore keyStore = loadKeyStore();
+
+        char[] password = properties.password().toCharArray();
+
+        Certificate[] certificateChain = {
+                certificate
+        };
+
+        keyStore.setKeyEntry(
+                properties.alias(),
+                keyPair.getPrivate(),
+                password,
+                certificateChain
+        );
+
+        Path path = Path.of(properties.path());
+
+        try (OutputStream output = Files.newOutputStream(path)) {
+            keyStore.store(output, password);
+        }
+    }
+
+
+    public KeyPair loadKeyPair()
+            throws GeneralSecurityException, IOException {
+
+        KeyStore keyStore = loadKeyStore();
+
+        String alias = properties.alias();
+        char[] password = properties.password().toCharArray();
+
+        if (!keyStore.isKeyEntry(alias)) {
+            throw new KeyStoreException(
+                    "Chave RSA não encontrada no KeyStore: " + alias
+            );
+        }
+
+        PrivateKey privateKey = (PrivateKey) keyStore.getKey(
+                alias,
+                password
+        );
+
+        Certificate certificate = keyStore.getCertificate(alias);
+
+        if (certificate == null) {
+            throw new KeyStoreException(
+                    "Certificado não encontrado para o alias: " + alias
+            );
+        }
+
+        PublicKey publicKey = certificate.getPublicKey();
+
+        return new KeyPair(publicKey, privateKey);
+    }
 }

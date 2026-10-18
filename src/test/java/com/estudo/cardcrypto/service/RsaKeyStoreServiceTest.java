@@ -9,7 +9,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.KeyStore;
+import java.security.cert.X509Certificate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -173,6 +176,83 @@ class RsaKeyStoreServiceTest {
         assertTrue(
                 exception.getMessage()
                         .contains("Arquivo KeyStore não encontrado")
+        );
+    }
+
+
+    @Test
+    void deveRetornarFalsoQuandoAliasNaoExiste()
+            throws Exception {
+
+        Path keyStorePath = tempDir.resolve("teste-alias.p12");
+
+        RsaKeyStoreProperties properties =
+                new RsaKeyStoreProperties(
+                        keyStorePath.toString(),
+                        "senha-de-teste",
+                        "cardcrypto-rsa"
+                );
+
+        RsaKeyStoreService service =
+                new RsaKeyStoreService(properties);
+
+        service.createKeyStore();
+
+        assertFalse(service.containsKeyAlias());
+    }
+
+
+    @Test
+    void deveSalvarParDeChavesNoKeyStore()
+            throws Exception {
+
+        Path keyStorePath = tempDir.resolve("chaves-rsa.p12");
+
+        RsaKeyStoreProperties properties =
+                new RsaKeyStoreProperties(
+                        keyStorePath.toString(),
+                        "senha-de-teste",
+                        "cardcrypto-rsa"
+                );
+
+        RsaKeyStoreService service =
+                new RsaKeyStoreService(properties);
+
+        service.createKeyStore();
+
+        KeyPairGenerator generator =
+                KeyPairGenerator.getInstance("RSA");
+
+        generator.initialize(2048);
+
+        KeyPair keyPair = generator.generateKeyPair();
+
+        RsaCertificateService certificateService =
+                new RsaCertificateService();
+
+        X509Certificate certificate =
+                certificateService.generateSelfSignedCertificate(keyPair);
+
+        service.saveKeyPair(keyPair, certificate);
+
+        KeyStore keyStore = service.loadKeyStore();
+
+        assertTrue(keyStore.containsAlias("cardcrypto-rsa"));
+
+        assertTrue(keyStore.isKeyEntry("cardcrypto-rsa"));
+
+        assertArrayEquals(
+                keyPair.getPublic().getEncoded(),
+                keyStore.getCertificate("cardcrypto-rsa")
+                        .getPublicKey().getEncoded()
+        );
+
+        assertArrayEquals(
+                keyPair.getPrivate().getEncoded(),
+                keyStore.getKey(
+                        "cardcrypto-rsa",
+                        "senha-de-teste".toCharArray()
+                ).getEncoded()
         );
     }
 }

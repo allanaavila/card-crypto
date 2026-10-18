@@ -81,6 +81,22 @@
 			<artifactId>spring-boot-starter-webmvc-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+
+		<!-- Provedor de algoritmos criptográficos -->
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-jdk18on</artifactId>
+			<version>1.83</version>
+		</dependency>
+
+		<!-- Recursos para criação de certificados X.509 -->
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcpkix-jdk18on</artifactId>
+			<version>1.83</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>

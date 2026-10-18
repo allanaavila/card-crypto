@@ -50,4 +50,12 @@ class RsaKeyServiceTest {
         );
     }
 
+
+    @Test
+    void deveRetornarIdentificadorDaChave() {
+
+        String keyId = rsaKeyService.getKeyId();
+
+        assertEquals("rsa-key-001", keyId);
+    }
 }

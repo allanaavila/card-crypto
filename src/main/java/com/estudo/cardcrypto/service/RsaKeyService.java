@@ -11,6 +11,7 @@ import java.util.Base64;
 @Service
 public class RsaKeyService {
     private final KeyPair keyPair;
+    private static final String KEY_ID = "rsa-key-001";
 
     public RsaKeyService() throws Exception {
         KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
@@ -33,5 +34,9 @@ public class RsaKeyService {
 
     public PrivateKey getPrivateKey() {
         return keyPair.getPrivate();
+    }
+
+    public String getKeyId() {
+        return KEY_ID;
     }
 }

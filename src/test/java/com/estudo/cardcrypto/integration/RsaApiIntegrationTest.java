@@ -51,6 +51,7 @@ class RsaApiIntegrationTest {
 
         var json = objectMapper.readTree(responseBody);
 
+        assertEquals("rsa-key-001", json.get("kid").asText());
         assertEquals("RSA", json.get("algorithm").asText());
 
         String chavePublicaBase64 =

@@ -43,12 +43,16 @@ public class CryptoController {
         return ResponseEntity.ok(response);
     }
 
+
     @GetMapping("/public-key")
     public ResponseEntity<PublicKeyResponse> getPublicKey() {
+
         PublicKeyResponse response = new PublicKeyResponse(
+                rsaKeyService.getKeyId(),
                 "RSA",
                 rsaKeyService.getPublicKeyBase64()
         );
+
         return ResponseEntity.ok(response);
     }
 }

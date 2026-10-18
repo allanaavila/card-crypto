@@ -45,4 +45,38 @@ class RsaCryptoServiceTest {
         );
     }
 
+    @Test
+    void deveCriptografarEDescriptografarIdp() throws Exception {
+
+        String idpOriginal = "IDP123ABC";
+
+        String textoCriptografado =
+                rsaCryptoService.encrypt(idpOriginal);
+
+        String textoDescriptografado =
+                rsaCryptoService.decrypt(textoCriptografado);
+
+        assertNotEquals(idpOriginal, textoCriptografado);
+        assertEquals(idpOriginal, textoDescriptografado);
+    }
+
+    @Test
+    void naoDeveDescriptografarTextoVazio() {
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> rsaCryptoService.decrypt("")
+        );
+    }
+
+    @Test
+    void naoDeveDescriptografarBase64Invalido() {
+
+        String textoInvalido = "###NAO_E_BASE64###";
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> rsaCryptoService.decrypt(textoInvalido)
+        );
+    }
 }

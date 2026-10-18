@@ -79,4 +79,37 @@ class CryptoControllerTest {
 
         verifyNoInteractions(rsaCryptoService);
     }
+
+
+    @Test
+    void naoDeveCriptografarQuandoValueForNulo() throws Exception {
+
+        mockMvc.perform(post("/api/crypto/rsa/encrypt")
+                        .contentType("application/json")
+                        .content("""
+                            {
+                                "value": null
+                            }
+                            """))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(rsaCryptoService);
+    }
+
+
+    @Test
+    void naoDeveCriptografarQuandoValueNaoForInformado() throws Exception {
+
+        mockMvc.perform(post("/api/crypto/rsa/encrypt")
+                        .contentType("application/json")
+                        .content("""
+                            {
+                            }
+                            """))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(rsaCryptoService);
+    }
+
+
 }

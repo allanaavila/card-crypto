@@ -1,3 +1,4 @@
+
 package com.estudo.cardcrypto.config;
 
 import org.springframework.context.annotation.Bean;
@@ -12,22 +13,35 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http
+    ) throws Exception {
+
         return http
                 .csrf(csrf -> csrf.disable())
+
+                .headers(headers -> headers
+                        .frameOptions(frame -> frame.sameOrigin())
+                )
+
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/h2-console",
+                                "/h2-console/**"
+                        ).permitAll()
+
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/crypto/rsa/encrypt",
                                 "/api/crypto/rsa/decrypt"
                         ).permitAll()
 
-                                .requestMatchers(
-                                        HttpMethod.GET,
-                                        "/api/crypto/rsa/public-key"
-                                ).permitAll()
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/crypto/rsa/public-key"
+                        ).permitAll()
 
-                .anyRequest().authenticated()
+                        .anyRequest().authenticated()
                 )
                 .build();
     }

@@ -1,8 +1,26 @@
+
 spring:
   application:
     name: card-crypto-api
+
   profiles:
     active: dev
+
+  datasource:
+    url: jdbc:h2:file:./data/cardcrypto
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
 
 server:
   port: 8080

@@ -1,0 +1,6 @@
+crypto:
+  rsa:
+    keystore:
+      path: ./data/keys/cardcrypto.p12
+      password: ${RSA_KEYSTORE_PASSWORD}
+      alias: cardcrypto-rsa

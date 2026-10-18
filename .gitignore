@@ -33,3 +33,8 @@ build/
 .vscode/
 
 /data/
+
+# Arquivos de armazenamento de chaves
+*.p12
+*.pfx
+*.jks

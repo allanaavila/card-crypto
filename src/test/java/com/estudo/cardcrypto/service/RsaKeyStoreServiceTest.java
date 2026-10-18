@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.cert.X509Certificate;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -255,4 +256,107 @@ class RsaKeyStoreServiceTest {
                 ).getEncoded()
         );
     }
+
+
+    @Test
+    void deveRecuperarParDeChavesSalvoNoKeyStore()
+            throws Exception {
+
+        Path keyStorePath = tempDir.resolve("recuperacao-rsa.p12");
+
+        RsaKeyStoreProperties properties =
+                new RsaKeyStoreProperties(
+                        keyStorePath.toString(),
+                        "senha-de-teste",
+                        "cardcrypto-rsa"
+                );
+
+        RsaKeyStoreService service =
+                new RsaKeyStoreService(properties);
+
+        service.createKeyStore();
+
+        KeyPairGenerator generator =
+                KeyPairGenerator.getInstance("RSA");
+
+        generator.initialize(2048);
+
+        KeyPair originalKeyPair = generator.generateKeyPair();
+
+        RsaCertificateService certificateService =
+                new RsaCertificateService();
+
+        X509Certificate certificate =
+                certificateService.generateSelfSignedCertificate(
+                        originalKeyPair
+                );
+
+        service.saveKeyPair(originalKeyPair, certificate);
+
+        RsaKeyStoreService newService =
+                new RsaKeyStoreService(properties);
+
+        KeyPair recoveredKeyPair = newService.loadKeyPair();
+
+        assertNotNull(recoveredKeyPair);
+
+        assertArrayEquals(
+                originalKeyPair.getPublic().getEncoded(),
+                recoveredKeyPair.getPublic().getEncoded()
+        );
+
+        assertArrayEquals(
+                originalKeyPair.getPrivate().getEncoded(),
+                recoveredKeyPair.getPrivate().getEncoded()
+        );
+    }
+
+
+    @Test
+    void deveImpedirSobrescritaDeChaveExistente()
+            throws Exception {
+
+        Path keyStorePath = tempDir.resolve("protecao-rsa.p12");
+
+        RsaKeyStoreProperties properties =
+                new RsaKeyStoreProperties(
+                        keyStorePath.toString(),
+                        "senha-de-teste",
+                        "cardcrypto-rsa"
+                );
+
+        RsaKeyStoreService service =
+                new RsaKeyStoreService(properties);
+
+        service.createKeyStore();
+
+        KeyPairGenerator generator =
+                KeyPairGenerator.getInstance("RSA");
+
+        generator.initialize(2048);
+
+        KeyPair keyPair = generator.generateKeyPair();
+
+        RsaCertificateService certificateService =
+                new RsaCertificateService();
+
+        X509Certificate certificate =
+                certificateService.generateSelfSignedCertificate(keyPair);
+
+        service.saveKeyPair(keyPair, certificate);
+
+        assertThrows(
+                KeyStoreException.class,
+                () -> service.saveKeyPair(keyPair, certificate)
+        );
+
+        KeyPair recoveredKeyPair = service.loadKeyPair();
+
+        assertArrayEquals(
+                keyPair.getPrivate().getEncoded(),
+                recoveredKeyPair.getPrivate().getEncoded()
+        );
+    }
+
+
 }

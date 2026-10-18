@@ -100,6 +100,13 @@ public class RsaKeyStoreService {
 
         KeyStore keyStore = loadKeyStore();
 
+        if (keyStore.containsAlias(properties.alias())) {
+            throw new KeyStoreException(
+                    "Já existe uma chave armazenada com o alias: "
+                            + properties.alias()
+            );
+        }
+
         char[] password = properties.password().toCharArray();
 
         Certificate[] certificateChain = {

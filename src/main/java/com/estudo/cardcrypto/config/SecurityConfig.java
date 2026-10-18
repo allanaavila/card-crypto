@@ -21,6 +21,12 @@ public class SecurityConfig {
                                 "/api/crypto/rsa/encrypt",
                                 "/api/crypto/rsa/decrypt"
                         ).permitAll()
+
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/crypto/rsa/public-key"
+                                ).permitAll()
+
                 .anyRequest().authenticated()
                 )
                 .build();

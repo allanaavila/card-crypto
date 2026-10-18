@@ -1,6 +1,7 @@
 package com.estudo.cardcrypto.controller;
 
 import com.estudo.cardcrypto.service.RsaCryptoService;
+import com.estudo.cardcrypto.service.RsaKeyService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -9,8 +10,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -23,6 +24,9 @@ class CryptoControllerTest {
 
     @MockitoBean
     private RsaCryptoService rsaCryptoService;
+
+    @MockitoBean
+    private RsaKeyService rsaKeyService;
 
     @Test
     void deveCriptografarIdpComSucesso() throws Exception {
@@ -109,6 +113,25 @@ class CryptoControllerTest {
                 .andExpect(status().isBadRequest());
 
         verifyNoInteractions(rsaCryptoService);
+    }
+
+
+    @Test
+    void deveRetornarChavePublicaComSucesso()
+            throws Exception {
+
+        String chavePublicaBase64 = "CHAVE_PUBLICA_SIMULADA";
+
+        when(rsaKeyService.getPublicKeyBase64())
+                .thenReturn(chavePublicaBase64);
+
+        mockMvc.perform(get("/api/crypto/rsa/public-key"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.algorithm").value("RSA"))
+                .andExpect(jsonPath("$.publicKey")
+                        .value(chavePublicaBase64));
+
+        verify(rsaKeyService).getPublicKeyBase64();
     }
 
 
